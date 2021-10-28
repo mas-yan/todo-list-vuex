@@ -24,11 +24,12 @@
                     <div>
                         <h5>Done: {{done}}</h5>
                         <h5>Pending: {{pending}}</h5>
+                        <h5>Total: {{todos.length}}</h5>
                     </div>
                     <div class="mb-3">
                         <input type="text" class="form-control" placeholder="Add Todo" v-model="todo" @keyup.enter="addTodo">
                     </div>
-                    <table class="table table-striped table-bordered shadow">
+                    <table class="table table-striped table-bordered shadow" v-if="todos.length > 0">
                         <tr v-for="(todo,index) in todos" :key="index">
                             <td @click="statusTodo(todo)" style="width: 90%;">
                                 <span :class="{completed: todo.completed}">{{todo.title}}</span>
@@ -38,6 +39,9 @@
                             </td>
                         </tr>
                     </table>
+                    <div class="alert alert-danger" v-else>
+                        Todo Empty
+                    </div>
                 </div>
             </div>
         </div>
