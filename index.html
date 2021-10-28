@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>todo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-uWxY/CJNBR+1zjPWmfnSnVxwRheevXITnMqoEIeG1LJrdI0GlVs/9cVSyPYXdcSF" crossorigin="anonymous">
+
+    <style>
+        .completed {
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col">
+                <div id="app">
+                    <div>
+                        <h5>Done: {{done}}</h5>
+                        <h5>Pending: {{pending}}</h5>
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" class="form-control" placeholder="Add Todo" v-model="todo" @keyup.enter="addTodo">
+                    </div>
+                    <table class="table table-striped table-bordered shadow">
+                        <tr v-for="(todo,index) in todos" :key="index">
+                            <td @click="statusTodo(todo)" style="width: 90%;">
+                                <span :class="{completed: todo.completed}">{{todo.title}}</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-danger" @click="deleteTodo(index)">Delete</button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@next"></script>
+    <script src="https://unpkg.com/vuex@4.0.0/dist/vuex.global.js"></script>
+
+    <script>
+        const store = Vuex.createStore({
+            state: {
+                todos: JSON.parse(localStorage.getItem('todos')) || []
+            },
+            getters: {
+                doneTodo(state) {
+                    return state.todos.filter(item => {
+                        return item.completed == true
+                    }).length
+                },
+                pendingTodo(state) {
+                    return state.todos.filter(item => {
+                        return item.completed == false
+                    }).length
+                }
+            },
+            mutations: {
+                ADD_TODO(state, data) {
+                    return state.todos.push({
+                        title: data,
+                        completed: false
+                    })
+                },
+                STATUS_TODO(state, data) {
+                    return data.completed = !data.completed
+                },
+                DELETE_TODO(state, data) {
+                    return state.todos.splice(data, 1)
+                },
+                SAVE_TODO(state) {
+                    return localStorage.setItem('todos', JSON.stringify(state.todos))
+                }
+            },
+            actions: {
+                addTodo({
+                    commit
+                }, data) {
+                    commit('ADD_TODO', data)
+                    commit('SAVE_TODO', data)
+                },
+                statusTodo({
+                    commit
+                }, data) {
+                    commit('STATUS_TODO', data)
+                    commit('SAVE_TODO', data)
+                },
+                deleteTodo({
+                    commit
+                }, data) {
+                    commit('DELETE_TODO', data)
+                    commit('SAVE_TODO', data)
+                }
+            }
+        })
+
+        const app = Vue.createApp({
+            data() {
+                return {
+                    todo: ''
+                }
+            },
+            computed: {
+                todos() {
+                    return this.$store.state.todos
+                },
+                done() {
+                    return this.$store.getters.doneTodo
+                },
+                pending() {
+                    return this.$store.getters.pendingTodo
+                }
+            },
+
+            methods: {
+                addTodo() {
+                    this.$store.dispatch('addTodo', this.todo)
+                    this.todo = ''
+                },
+                statusTodo(data) {
+                    this.$store.dispatch('statusTodo', data)
+                },
+                deleteTodo(data) {
+                    this.$store.dispatch('deleteTodo', data)
+                },
+            }
+        })
+
+        app.use(store)
+        app.mount('#app')
+    </script>
+</body>
+
+</html>
